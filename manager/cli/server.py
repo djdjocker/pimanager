@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import errno
+import htmlPy
 import logging
 import os
+import PySide
 import time
 import thread
 import threading
@@ -9,7 +12,6 @@ import socket
 import sys
 import werkzeug
 import werkzeug.serving
-
 _logger = logging.getLogger(__name__)
 
 class Server():
@@ -40,6 +42,27 @@ class ThreadedServer(object):
 
         self.httpd = None
         
+    def close_socket(self, sock):
+        """ Closes a socket instance cleanly
+        :param sock: the network socket to close
+        :type sock: socket.socket
+        """
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except socket.error, e:
+            if e.errno == errno.EBADF:
+                # Werkzeug > 0.9.6 closes the socket itself (see commit
+                # https://github.com/mitsuhiko/werkzeug/commit/4d8ca089)
+                return
+            # On OSX, socket shutdowns both sides if any side closes it
+            # causing an error 57 'Socket is not connected' on shutdown
+            # of the other side (or something), see
+            # http://bugs.python.org/issue4397
+            # note: stdlib fixed test, not behavior
+            if e.errno != errno.ENOTCONN or platform.system() not in ['Darwin', 'Windows']:
+                raise
+        sock.close()
+
     def run(self):
         self.start()
         try:
@@ -51,13 +74,13 @@ class ThreadedServer(object):
     
     def start(self):
         _logger.debug("Setting signal handlers")
-        signal.signal(signal.SIGINT, self.signal_handler)
-        signal.signal(signal.SIGTERM, self.signal_handler)
-        signal.signal(signal.SIGCHLD, self.signal_handler)
-        signal.signal(signal.SIGHUP, self.signal_handler)
+        signal.signal(signal.SIGINT, signal.SIG_DFL)#self.signal_handler)
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)#self.signal_handler)
+        signal.signal(signal.SIGCHLD, signal.SIG_DFL)#self.signal_handler)
+        signal.signal(signal.SIGHUP, signal.SIG_DFL)#self.signal_handler)
         
         self.http_spawn()
-        #self.gui_spawn()
+        self.gui_thread()
 
     def stop(self):
         """ Shutdown the WSGI server. Wait for non deamon threads."""
@@ -127,6 +150,22 @@ class ThreadedServer(object):
         self.httpd = ThreadedWSGIServerReloadable(self.interface, self.port, app)
         self.httpd.serve_forever()
     
+    def gui_spawn(self):
+        def target():
+            self.gui_thread()
+        t = threading.Thread(target=target, name="pimanager.gui")
+        t.setDaemon(True)
+        t.start()
+        _logger.debug("gui started!")
+        
+    def gui_thread(self):
+        app = htmlPy.AppGUI(title=u"PiManagerGUI")
+        app.template_path = "."
+        #app.bind(BackEnd(app))
+
+        app.window.setWindowState(PySide.QtCore.Qt.WindowState.WindowFullScreen)
+        #app.template = ("index.html", {})
+        app.start()
     
     
 class ThreadedWSGIServerReloadable(werkzeug.serving.ThreadedWSGIServer):
