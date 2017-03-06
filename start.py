@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#-*- coding: utf8 -*-
+
 import manager
 import os
 import re

@@ -8,9 +8,10 @@ from manager.server import Server
 
 _logger = logging.getLogger(__name__)
 
-class GUI(htmlPy.AppGUI):
+class GUI(htmlPy.WebAppGUI):
     def __init__(self, *args, **kwargs):
         super(GUI, self).__init__(title=u"PiManagerGUI", *args, **kwargs)
+        self.url = u'http://localhost:10000/gui'
         self.window.setWindowState(PySide.QtCore.Qt.WindowState.WindowFullScreen)
         self.set_signals()
         self.http = None

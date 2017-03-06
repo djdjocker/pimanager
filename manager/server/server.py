@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import errno
 import logging
+import manager
 import os
 import socket
 import thread
@@ -61,7 +62,7 @@ class Server(object):
         
     def http_thread(self):
         def app(environ, start_response):
-            for handler in [self.xmlrpc, self.http]:
+            for handler in [self.xmlrpc, manager.http.root]:
                 result = handler(environ, start_response)
                 if result is None:
                     continue
@@ -78,9 +79,6 @@ class Server(object):
     def xmlrpc(self, environ, start_response):
         pass
         
-    def http(self, environ, start_response):
-        pass
-       
     def close_socket(self, sock):
         """ Closes a socket instance cleanly
         :param sock: the network socket to close
