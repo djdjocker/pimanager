@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import netaddr
+import netifaces
 import werkzeug
 import werkzeug.exceptions
 
@@ -15,7 +17,9 @@ class Web(object):
         #self.httpsession = httprequest.session
         self.gui = False
         if httprequest.path and httprequest.path.startswith('/gui'):
-            if httprequest.remote_addr in ('localhost', '127.0.0.1'):
+            iface = netifaces.ifaddresses('eth0')[netifaces.AF_INET]
+            
+            if httprequest.remote_addr in ('localhost', '127.0.0.1') or netaddr.IPAddress(httprequest.remote_addr) in netaddr.IPNetwork('%(addr)s/%(netmask)s' % iface[0]):
                 self.gui = True
                 httprequest.path = httprequest.path[4:] or '/'
                 httprequest.environ['PATH_INFO'] = httprequest.path

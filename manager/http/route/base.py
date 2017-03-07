@@ -172,3 +172,10 @@ class BaseRouter(Router):
     @route('/', auth="none")
     def index(self, r=None):
         return "ok" #request.redirect('/installation')
+        
+    @route('/gui', auth="none")
+    def gui(self, r=None):
+        if not request.gui:
+            return request.redirect('/')
+        return self.index(r)
+        
