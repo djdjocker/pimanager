@@ -7,6 +7,10 @@ from PyQt4.QtCore import SIGNAL, QObject, Qt
 
 #import http
 
+from config import config
+
+from .logger import init_logger
+
 from gui import Gui
 from server import Server
 
@@ -18,6 +22,8 @@ def start():
     signal.signal(signal.SIGTERM, signal.SIG_DFL)
     signal.signal(signal.SIGCHLD, signal.SIG_DFL)
     signal.signal(signal.SIGHUP, signal.SIG_DFL)
+    
+    init_logger()
     
     app = QApplication([])
     

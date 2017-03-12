@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import netaddr
 import netifaces
+import os
 
-from bottle import route, run, request, hook
+from bottle import route, run, request, hook, static_file
 from PyQt4.QtCore import QUrl, QThread, SIGNAL
+from templates import Template
+
+_logger = logging.getLogger(__name__)
 
 class Server(QThread):
     def __init__(self):
@@ -14,7 +19,8 @@ class Server(QThread):
         self.httpd = None
 
     def run(self):
-        self.httpd = run(host='0.0.0.0', port=10000)
+        _logger.info("Start HTTP server on port 10000")
+        self.httpd = run(host='0.0.0.0', port=10000, reloader=True, debug=True, quiet=True)
         
     def register_hooks(self):
         @hook('before_request')
@@ -35,13 +41,13 @@ class Server(QThread):
             
         @route('/')
         def index():
-            if request.remote:
-                self.emit(SIGNAL('go_to(QString)'), 'http://127.0.0.1:10000%s' % request.path)
-            return 'ok'
+            #if request.remote:
+            #    self.emit(SIGNAL('go_to(QString)'), 'http://127.0.0.1:10000%s' % request.path)
+            return Template(content='ok').render()
             
-        @route('/gui')
-        def gui():
-            if request.remote:
-                self.emit(SIGNAL('go_to(QString)'), 'http://127.0.0.1:10000%s' % request.path)
-            return 'gui ok'
+        @route('/static/<filepath:path>')
+        def server_static(filepath):
+            if os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static', filepath)):
+                return static_file(filepath, root=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static'))
+            return None
         
