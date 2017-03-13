@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import manager
 import os
 import re
 
+from bottle import request
 from lxml import etree
 
 def escape(s):
@@ -62,8 +64,7 @@ class Template(object):
                 with open(template) as tfile:
                     self._template = etree.HTML(tfile.read())
             except :
-                print 'ici'
-                self.template = etree.HTML("""
+                self._template = etree.HTML("""
                 <html>
                     <head />
                     <body>
@@ -77,6 +78,15 @@ class Template(object):
         self._title = title
         self._template_content = template_content
     
+    def __repr__(self):
+        return self.render()
+        
+    def __str__(self):
+        return self.render()
+        
+    def __iter__(self):
+        return self.render()
+        
     def render(self, element=None, generated_attributes=''):
         if element is None:
             element = self._template
@@ -94,6 +104,11 @@ class Template(object):
         if isinstance(result, unicode):
             result = result.encode('utf-8')
         
+        if 't-if' in element.attrib:
+            if not bool(eval(element.attrib['t-if'].encode("utf8"))):
+                return element.tail and self.render_tail(element.tail, element) or ''
+            del element.attrib['t-if']
+                
         t_render = None
         template_attributes = {}
         
@@ -102,11 +117,8 @@ class Template(object):
             attribute_value = attribute_value.encode("utf8")
 
             if attribute_name.startswith("t-"):
-                if hasattr(self, "render_att_%s" % attribute_name[2:]):
-                    attrs = getattr(self, "render_att_%s" % attribute_name)(element, attribute_name[2:], attribute_value)
-                    for att, val in attrs:
-                        if not val: continue
-                        generated_attributes += self.render_attribute(element, att, val)
+                if attribute_name[2:].startswith('att'):
+                    generated_attributes += self.render_attribute(element, attribute_name[6:], eval(attribute_value))
                         
                 else:
                     if hasattr(self, "render_tag_%s" % attribute_name[2:]):
@@ -187,7 +199,7 @@ class Template(object):
 
         elif name == "content":
             if self._template_content:
-                return Template(template=etree.HTML(self._template_content), content=self._content)
+                return Template(template=self._template_content, content=self._content).render()
             else:
                 return self._content
         

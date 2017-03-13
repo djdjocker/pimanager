@@ -7054,9 +7054,9 @@ label.disabled {
     color: #999
 }
 
-.nav-bar-nav>li>a:focus,.nav-bar-nav>li>a:hover {
+.nav-bar-nav>li>a:focus,.nav-bar-nav>li>a:hover,.nav-bar-nav>li>a.active {
     color: #eee;
-    background-color: transparent
+    background-color: gray;
 }
 
 .nav-bar-nav>li>a.back-btn {

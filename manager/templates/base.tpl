@@ -12,8 +12,8 @@
             </ul>
             
             <ul class="nav nav-bar-nav nav-bar-right">
-                <li><a class="settings-btn" href="/settings" title="" data-toggle="tooltip" data-original-title="Réglages"><i class="glyphicon settings" />&nbsp;</a></li>
-                <li><a class="gui-btn" href="/gui" ><i class="plex-icon-companion-cast" />&nbsp;</a></li>
+                <li><a t-if="request.localhost or request.remote" t-att-class="'settings-btn' + (request.path.startswith('/config') and ' active')" href="/config" title="" data-toggle="tooltip" data-original-title="Réglages"><i class="glyphicon settings" />&nbsp;</a></li>
+                <li><a t-if="not request.gui" class="gui-btn" href="/gui" ><i class="plex-icon-companion-cast" />&nbsp;</a></li>
             </ul>
         </div>
         <div class="background-container">
