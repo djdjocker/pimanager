@@ -1,17 +1,18 @@
 <div class="container">
-    <ul class="nav nav-header pull-right">
-        <li class="web-nav-item">
-            <a class="web-btn btn-gray selected" href="/config/general">Général</a>
-        </li>
-        
-        <li class="server-nav-item hidden">
-            <a class="server-btn btn-gray " href="/settings/plex">Plex</a>
-        </li>
-    </ul>
-
     <h2>Réglages</h2>
 
     <div class="settings-container">
+        <div class="filter-bar" >
+            <ul class="nav nav-header pull-right">
+                <li class="web-nav-item">
+                    <a class="web-btn btn-gray selected" href="/config/general">Général</a>
+                </li>
+                
+                <li class="server-nav-item hidden">
+                    <a class="server-btn btn-gray " href="/settings/plex">Plex</a>
+                </li>
+            </ul>
+        </div>
         <div class="general-settings-container">
             <div class="row">
                 <div class="col-sm-4 col-md-3">
@@ -25,12 +26,9 @@
                     <form id="general-config-form">
                         <div id="general-web-group" class="settings-group active">
                             <div class="form-group">
-                                <label for="language">Overscreen</label>
-                                <label class="switch">
-                                  <input type="checkbox">
-                                  <div class="slider round"></div>
-                                </label>
-                                <p class="help-block">Activez l'overscreen pour régler les marges autour de l'écran.</p>
+                                <label for="language">Overscan</label>
+                                <button type="button" class="overscan-advanced-btn btn btn-sm btn-default pull-right basic-setting" data-toggle="modal" data-target="#modal-setting-overscan">Régler</button>
+                                <p class="help-block">Réglez l'overscan pour supprimer les marges ou le dépassements autour de l'image.</p>
                             </div>
 
                             <!--div class="form-group">

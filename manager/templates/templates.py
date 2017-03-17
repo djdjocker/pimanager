@@ -43,7 +43,15 @@ def unescape(s):
     return _entity_re.sub(handle_match, s)
 
 class Template(object):
-    _default_css = [("", "src/css/base.css"), ("", "src/css/main.css")]
+    _default_css = [("", "lib/bootstrap/css/bootstrap.css"),
+                    ("", "src/css/base.css"),
+                    ("", "src/css/glyphicons.css"),
+                    ]#[ ("", "src/css/main.css")]
+    
+    _default_js = [("", "lib/jquery/jquery-3.1.1.js"),
+                   ("", "lib/jquery/jquery.cookie.js"),
+                   ("", "lib/bootstrap/js/bootstrap.js")
+                   ]
     _void_elements = frozenset([
         u'area', u'base', u'br', u'col', u'embed', u'hr', u'img', u'input',
         u'keygen', u'link', u'menuitem', u'meta', u'param', u'source',
@@ -58,11 +66,12 @@ class Template(object):
             '\{\{(.+?)\}\}'
         ')')
 
-    def __init__(self, template=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'base.tpl'), content="", css=[], js=[], title="PiManager", template_content=False):
+    def __init__(self, template=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'base.tpl'), content="", css=[], js=[], title="PiManager", template_content=False, extra=[]):
         if template:
             try:
                 with open(template) as tfile:
-                    self._template = etree.HTML(tfile.read())
+                    content = tfile.read()
+                    self._template = etree.HTML(content)
             except :
                 self._template = etree.HTML("""
                 <html>
@@ -74,9 +83,10 @@ class Template(object):
                 
         self._content = content
         self._css = self._default_css + css
-        self._js = js
+        self._js = self._default_js + js
         self._title = title
         self._template_content = template_content
+        self._extras = extra
     
     def __repr__(self):
         return self.render()
@@ -193,7 +203,7 @@ class Template(object):
                 else:
                     module, js = js
                     path = "/static/" + (module and "%s"%module or "") + js
-                js += """<script src="%s" ></script>
+                result += """<script src="%s" ></script>
 """ % path
             return result
 
@@ -202,7 +212,14 @@ class Template(object):
                 return Template(template=self._template_content, content=self._content).render()
             else:
                 return self._content
-        
+                
+        elif name == "extras":
+            result = ""
+            if self._extras:
+                for extra in self._extras:
+                    result += Template(template=extra[0], content=extra[1]).render()
+
+            return result
         else:
             if len(inner) or name not in self._void_elements:
                 result = "<%s%s>%s</%s>" % tuple(
